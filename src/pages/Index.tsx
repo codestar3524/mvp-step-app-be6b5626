@@ -1,13 +1,45 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+
+import { useState, useEffect } from 'react';
+import { useSearchParams, useNavigate } from 'react-router-dom';
+import AuthLayout from '../components/auth/AuthLayout';
+import LoginForm from '../components/auth/LoginForm';
+import RegisterForm from '../components/auth/RegisterForm';
+import { useAuth } from '../App';
 
 const Index = () => {
+  const navigate = useNavigate();
+  const { isAuthenticated, isOnboarded } = useAuth();
+  const [searchParams] = useSearchParams();
+  const [showRegister, setShowRegister] = useState(false);
+  
+  useEffect(() => {
+    // Check if register param is in URL
+    const registerParam = searchParams.get('register');
+    if (registerParam === 'true') {
+      setShowRegister(true);
+    }
+    
+    // Redirect if already authenticated
+    if (isAuthenticated) {
+      if (!isOnboarded) {
+        navigate('/onboarding/step-1');
+      } else {
+        navigate('/dashboard');
+      }
+    }
+  }, [isAuthenticated, isOnboarded, navigate, searchParams]);
+  
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold mb-4">Welcome to Your Blank App</h1>
-        <p className="text-xl text-gray-600">Start building your amazing project here!</p>
-      </div>
-    </div>
+    <AuthLayout
+      title={showRegister ? "Create Your Account" : "Welcome Back"}
+      subtitle={
+        showRegister
+          ? "Sign up to start using InsightPilot Nexus"
+          : "Sign in to your account to continue"
+      }
+    >
+      {showRegister ? <RegisterForm /> : <LoginForm />}
+    </AuthLayout>
   );
 };
 
